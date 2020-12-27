@@ -2,19 +2,16 @@
 
 from ppadb.client import Client
 import time
-from PIL import Image, ImageDraw
+from PIL import ImageDraw, ImageTk
+import PIL.Image
+
+import numpy as np
 
 import cv2
 from viewer import AndroidViewer
 
 
-import subprocess
-
-
 from tkinter import *
-from tkinter.filedialog import askopenfilename
-from PIL import Image, ImageTk
-import tkinter.simpledialog
 
 # client = Client(host="127.0.0.1", port=5037)
 # print(client)
@@ -67,8 +64,10 @@ root = Tk()
 
 basewidth = 450
 
+
+
 File = "screen.png"
-img = Image.open(File)
+img = PIL.Image.open(File)
 
 org_w = img.width
 org_h = img.height
@@ -78,7 +77,7 @@ print("Original Width:", org_w, "\nOriginal Height:", org_h)
 
 wpercent = (basewidth/float(img.size[0]))
 hsize = int((float(img.size[1])*float(wpercent)))
-img = img.resize((basewidth,hsize), Image.ANTIALIAS)
+img = img.resize((basewidth,hsize), PIL.Image.ANTIALIAS)
 
 image_width = img.width
 image_height = img.height
@@ -122,7 +121,7 @@ root.mainloop()
 
 print(coords)
 
-with Image.open("screen.png") as im:
+with PIL.Image.open("screen.png") as im:
 
     draw = ImageDraw.Draw(im)
 
@@ -141,44 +140,138 @@ with Image.open("screen.png") as im:
     im.save("click_locations.png", "PNG")
 
 
-# for i in range(50):
-#     for coord in coords:
-#         device.shell('input tap %s %s && input tap %s %s '%(coord[0], coord[1], coord[0], coord[1]))
-#         # subprocess.call("adb shell input tap %s %s"%(coord[0], coord[1]), shell = True)
-#
-#         print(coord[0], coord[1])
-
-
 
 android = AndroidViewer()
 
-while True:
+
+root = Tk()
+
+
+lmain = Label(root, width=50, height=10)
+lmain.grid()
+root.title("Controls")
+
+def video_stream():
     frames = android.get_next_frames()
-    # if frames != None:
-    #     print(frames)
+    # print(frames)
     if frames is None:
-        continue
+        pass
 
-    for frame in frames:
-        # cv2.imshow('game', frame)
-        # cv2.waitKey(1)
+    else:
+        for frame in frames:
 
-        #percent by which the image is resized
-        scale_percent = 45
+            scale_percent = 45
 
-        #calculate the 50 percent of original dimensions
-        width = int(frame.shape[1] * scale_percent / 100)
-        height = int(frame.shape[0] * scale_percent / 100)
+            #calculate the 50 percent of original dimensions
+            width = int(frame.shape[1] * scale_percent / 100)
+            height = int(frame.shape[0] * scale_percent / 100)
 
-        # dsize
-        dsize = (width, height)
+            # dsize
+            dsize = (width, height)
 
 
-        # cv2.namedWindow("output", cv2.WINDOW_NORMAL)        # Create window with freedom of dimensions
-        # im = cv2.imread("earth.jpg")                        # Read image
-        imS = cv2.resize(frame, dsize)                    # Resize image
-        cv2.imshow("Phone Viewer", imS)                            # Show image
-        cv2.waitKey(1)
-        for coord in coords:
-            # android.swipe(coord[0], coord[1], coord[0], coord[1])tap
-            android.tap(coord[0], coord[1])
+            # b,g,r = cv2.split(frame)
+            # img = cv2.merge((r,g,b))
+
+            # im = PIL.Image.fromarray(img)
+            imS = cv2.resize(frame, dsize)
+
+            cv2.imshow('Phone Viewer', imS)
+            cv2.waitKey(1)
+            for coord in coords:
+                # if isinstance(button1.config('textvariable')[-1], str) == True:
+                #     button1.config(text='OFF', bg="red",activebackground="red",textvariable=0)
+
+
+
+                if button1.config('text')[-1] =='OFF':
+                    # print(frame[168, 1034])
+                    pass
+
+                    # [229 191  15]
+                else:
+                    # print(str(button1.config('textvariable')[-1]))
+                    # print(frame[1029, 165])
+                    # test_ob = cv2.merge(frame)
+
+
+                    # cv2.imwrite("test_2.jpg", frame)
+
+
+                    # print("Level Up: %s"%(frame[155, 1034]))
+                    # print("No thanks Bird: %s"%(frame[1413, 782]))
+                    # print("Collect: %s"%(frame[1195, 782]))
+
+
+                    # Level Up Checker
+                    if np.all(frame[155, 1034] == [5, 142, 243]):
+                        android.tap(1034, 155)
+                        print("clicked Level Up")
+
+                    # No thanks Bird
+                    if np.all(frame[1413, 782] == [229, 191, 15]):
+                        android.tap(782, 1413)
+                        print("clicked No thanks Bird")
+
+
+                    # Collect
+                    if np.all(frame[1195, 782] == [229, 191, 15]):
+                        android.tap(782, 1195)
+                        print("clicked Collect")
+
+                    android.tap(coord[0], coord[1])
+            # imgtk = ImageTk.PhotoImage(image=im)
+            # lmain.imgtk = imgtk
+            # lmain.configure(image=imgtk)
+    lmain.after(1, video_stream)
+
+
+# def clicker(frame):
+# loop.call_soon_threadsafe(callback, *args)
+#
+# asyncio.run_coroutine_threadsafe(video_stream(), loop)
+
+
+
+# await video_stream()
+# asyncio.run()
+video_stream()
+
+
+# root = Tk()
+#
+# app = Frame(root, bg="white")
+# app.grid()
+# lmain = Label(app)
+# lmain.grid()
+# root.title("Controls")
+
+
+
+
+def toggle1():
+    if button1.config('text')[-1] =='ON':
+        button1.config(text='OFF', bg="red",activebackground="red",textvariable=0)
+        print(button1.config('textvariable')[-1])
+    else:
+        button1.config(text='ON', bg="green",activebackground="green",textvariable=1)
+        print(button1.config('textvariable')[-1])
+
+button1 = Button(
+            root,
+            text="OFF",
+            width=12,
+            height=1,
+            borderwidth=0,
+            command=toggle1 ,
+            relief="raised",
+            state="normal",
+            bg="red",
+            activebackground="red",
+            repeatdelay=1)
+button1.grid(pady=5)
+
+
+
+
+root.mainloop() # Start the GUI

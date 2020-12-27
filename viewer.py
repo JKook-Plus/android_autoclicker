@@ -24,7 +24,7 @@ class AndroidViewer(ControlMixin):
 
     video_data_queue = Queue()
 
-    def __init__(self, max_width=0, bitrate=8000000, max_fps=60, adb_path=r'C:\Users\JKook\Documents\Code\Python\Phone control\android_autoclicker\adb\adb.exe',
+    def __init__(self, max_width=0, bitrate=8000000, max_fps=30, adb_path=r'C:\Users\JKook\Documents\Code\Python\Phone control\android_autoclicker\adb\adb.exe',
                  ip='127.0.0.1', port=8081):
         """
 
