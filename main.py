@@ -10,21 +10,10 @@ import numpy as np
 import cv2
 from viewer import AndroidViewer
 
-
 from tkinter import *
 
-# client = Client(host="127.0.0.1", port=5037)
-# print(client)
-# device = client.device("emulator-5554")
-# print(device)
-# result = device.screencap()
-# with open("screen.png", "wb") as fp:
-#     fp.write(result)
 
 coords = []
-
-
-
 
 
 def connect_device():
@@ -45,27 +34,9 @@ def take_screenshot(device):
 
 device = connect_device()
 take_screenshot(device)
-
-
-
-
-
-#
-# for i in range(10):
-#     device.shell(f'input tap 500 200')
-#     time.sleep(0.75)
-
-
-
-
-
-
-root = Tk()
-
+# root = Tk()
 basewidth = 450
-
-
-
+"""
 File = "screen.png"
 img = PIL.Image.open(File)
 
@@ -110,14 +81,7 @@ root.bind('<Button-1>', on_click)
 
 root.mainloop()
 
-
-
-
-
-
-
-
-
+"""
 
 print(coords)
 
@@ -132,12 +96,37 @@ with PIL.Image.open("screen.png") as im:
         draw.rectangle([x,y,x+dotSize2-1,y+dotSize2-1], fill="black")
         draw.rectangle([x,y,x+dotSize-1,y+dotSize-1], fill="yellow")
 
-
-    # draw.line((0, 0) + im.size, fill=128)
-    # draw.line((0, im.size[1], im.size[0], 0), fill=128)
-
     # write to stdout
     im.save("click_locations.png", "PNG")
+
+def resizer(image, scale_percent):
+    width = int(image.shape[1] * scale_percent / 100)
+    height = int(image.shape[0] * scale_percent / 100)
+
+    dsize = (width, height)
+    imS = cv2.resize(image, dsize)
+    return imS
+
+
+def masking(view, ra, name):
+    lower = np.array(ra[0])
+    upper = np.array(ra[1])
+    hsv = cv2.cvtColor(view, cv2.COLOR_RGB2HSV)
+    mask = cv2.inRange(hsv, lower, upper)
+
+    view_height, view_width, _ = view.shape
+
+    # print(view_height, view_width)
+    # 1026 486
+
+    # print(cv2.countNonZero(mask), mask.size, cv2.countNonZero(mask)/mask.size*100)
+
+
+    cv2.imshow(name, mask)
+
+    cv2.waitKey(1)
+    return(round(cv2.countNonZero(mask)/mask.size*100,0))
+
 
 
 
@@ -153,124 +142,115 @@ root.title("Controls")
 
 def video_stream():
     frames = android.get_next_frames()
-    # print(frames)
     if frames is None:
         pass
 
     else:
+        # print(len(frames))
+
         for frame in frames:
 
-            scale_percent = 45
 
-            #calculate the 50 percent of original dimensions
-            width = int(frame.shape[1] * scale_percent / 100)
-            height = int(frame.shape[0] * scale_percent / 100)
+            imS = resizer(frame, 45)
 
-            # dsize
-            dsize = (width, height)
+            sc = cv2.cvtColor(imS, cv2.COLOR_BGR2RGB)
 
 
-            # b,g,r = cv2.split(frame)
-            # img = cv2.merge((r,g,b))
+            crop_coords = [
+            [[55,85],[380,478]],
+            [[610, 666],[97, 389]]
+            ]
 
-            # im = PIL.Image.fromarray(img)
-            imS = cv2.resize(frame, dsize)
 
-            cv2.imshow('Phone Viewer', imS)
-            cv2.waitKey(1)
+            color_range = [
+            [[16,200,220],[18,255,255]],
+            [[90,220,150],[100,250,255]]
+            ]
+
+            name = [
+            "Level Up",
+            "No, Thanks Bird"
+            ]
+
+            percentages = []
+
+            for cc, c, n in zip(crop_coords, color_range, name):
+                x, y = cc
+                t = sc[ x[0]:x[1], y[0]:y[1] ]
+                percentages.append(masking(t, c, n))
+
+
+            print(percentages)
+
+
+
+            if percentages[0] >= 70:
+                # android.tap(1034, 155)
+                print("clicked Level Up")
+
+            # No thanks Bird
+            if percentages[1] >= 80:
+                # android.tap(782, 1413)
+                print("clicked No thanks Bird")
+
+
+            # Collect
+            if np.all(frame[1195, 782] == [229, 191, 15]):
+                # android.tap(782, 1195)
+                print("clicked Collect")
+
+
+            print(ac_switch_variable.get())
+
+            # cv2.imshow('Phone Viewer', imS)
+            # cv2.waitKey(1)
             for coord in coords:
-                # if isinstance(button1.config('textvariable')[-1], str) == True:
-                #     button1.config(text='OFF', bg="red",activebackground="red",textvariable=0)
-
-
-
                 if button1.config('text')[-1] =='OFF':
-                    # print(frame[168, 1034])
                     pass
 
-                    # [229 191  15]
                 else:
-                    # print(str(button1.config('textvariable')[-1]))
-                    # print(frame[1029, 165])
-                    # test_ob = cv2.merge(frame)
-
-
-                    # cv2.imwrite("test_2.jpg", frame)
-
-
-                    # print("Level Up: %s"%(frame[155, 1034]))
-                    # print("No thanks Bird: %s"%(frame[1413, 782]))
-                    # print("Collect: %s"%(frame[1195, 782]))
-
-
+                    pass
                     # Level Up Checker
-                    if np.all(frame[155, 1034] == [5, 142, 243]):
-                        android.tap(1034, 155)
-                        print("clicked Level Up")
-
-                    # No thanks Bird
-                    if np.all(frame[1413, 782] == [229, 191, 15]):
-                        android.tap(782, 1413)
-                        print("clicked No thanks Bird")
 
 
-                    # Collect
-                    if np.all(frame[1195, 782] == [229, 191, 15]):
-                        android.tap(782, 1195)
-                        print("clicked Collect")
+                    # android.tap(coord[0], coord[1])
 
-                    android.tap(coord[0], coord[1])
-            # imgtk = ImageTk.PhotoImage(image=im)
-            # lmain.imgtk = imgtk
-            # lmain.configure(image=imgtk)
     lmain.after(1, video_stream)
 
 
-# def clicker(frame):
-# loop.call_soon_threadsafe(callback, *args)
-#
-# asyncio.run_coroutine_threadsafe(video_stream(), loop)
 
-
-
-# await video_stream()
-# asyncio.run()
 video_stream()
 
 
-# root = Tk()
-#
-# app = Frame(root, bg="white")
-# app.grid()
-# lmain = Label(app)
-# lmain.grid()
-# root.title("Controls")
+ac_switch_frame = Frame(root)
+ac_switch_frame.grid()
+
+ac_switch_variable = StringVar(value="off")
+
+ac_switch_label = Label(ac_switch_frame, text="Autoclicker Toggle ")
+ac_off_button = Radiobutton(ac_switch_frame, text="Off", variable=ac_switch_variable,
+                            indicatoron=False, value="off", width=8)
+ac_low_button = Radiobutton(ac_switch_frame, text="On", variable=ac_switch_variable,
+                            indicatoron=False, value="on", width=8)
+ac_switch_label.pack(side="left")
+ac_off_button.pack(side="left")
+ac_low_button.pack(side="left")
 
 
 
+lu_switch_frame = Frame(root)
+lu_switch_frame.grid()
 
-def toggle1():
-    if button1.config('text')[-1] =='ON':
-        button1.config(text='OFF', bg="red",activebackground="red",textvariable=0)
-        print(button1.config('textvariable')[-1])
-    else:
-        button1.config(text='ON', bg="green",activebackground="green",textvariable=1)
-        print(button1.config('textvariable')[-1])
+lu_switch_variable = StringVar(value="off")
 
-button1 = Button(
-            root,
-            text="OFF",
-            width=12,
-            height=1,
-            borderwidth=0,
-            command=toggle1 ,
-            relief="raised",
-            state="normal",
-            bg="red",
-            activebackground="red",
-            repeatdelay=1)
-button1.grid(pady=5)
-
+lu_switch_label = Label(lu_switch_frame, text="Level Up Toggle ")
+lu_off_button = Radiobutton(lu_switch_frame, text="Off", variable=lu_switch_variable,
+                            indicatoron=False, value="off", width=8)
+lu_on_button = Radiobutton(lu_switch_frame, text="On", variable=lu_switch_variable,
+                            indicatoron=False, value="on", width=8)
+lu_switch_label.pack(side="left")
+lu_off_button.pack(side="left")
+lu_on_button.pack(side="left")
 
 
 
