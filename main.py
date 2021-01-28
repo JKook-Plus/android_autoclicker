@@ -34,9 +34,9 @@ def take_screenshot(device):
 
 device = connect_device()
 take_screenshot(device)
-# root = Tk()
+root = Tk()
 basewidth = 450
-"""
+
 File = "screen.png"
 img = PIL.Image.open(File)
 
@@ -81,7 +81,7 @@ root.bind('<Button-1>', on_click)
 
 root.mainloop()
 
-"""
+
 
 print(coords)
 
@@ -122,9 +122,9 @@ def masking(view, ra, name):
     # print(cv2.countNonZero(mask), mask.size, cv2.countNonZero(mask)/mask.size*100)
 
 
-    cv2.imshow(name, mask)
+    # cv2.imshow(name, mask)
 
-    cv2.waitKey(1)
+    # cv2.waitKey(1)
     return(round(cv2.countNonZero(mask)/mask.size*100,0))
 
 
@@ -156,6 +156,21 @@ def video_stream():
             sc = cv2.cvtColor(imS, cv2.COLOR_BGR2RGB)
 
 
+            tot = {
+            "Level Up":
+                        [[[55, 85], [380, 478]],
+                        [[16,200,220], [18,255,255]]
+                        ],
+            "No, Thanks Bird":
+                        [[[610, 666],[97, 389]],
+                        [[90,220,150],[100,250,255]]
+                        ],
+            "Collect":
+                        [[[509, 570],[97, 389]],
+                        [[90,220,150],[100,250,255]]
+                        ]
+            }
+
             crop_coords = [
             [[55,85],[380,478]],
             [[610, 666],[97, 389]]
@@ -174,42 +189,87 @@ def video_stream():
 
             percentages = []
 
-            for cc, c, n in zip(crop_coords, color_range, name):
-                x, y = cc
-                t = sc[ x[0]:x[1], y[0]:y[1] ]
-                percentages.append(masking(t, c, n))
+            # 30 98
+            # 56 292
+
+            for key in tot:
+                x, y = tot[key][0]
+                color_r = tot[key][1]
+                selection = sc[ x[0]:x[1], y[0]:y[1] ]
 
 
-            print(percentages)
+                percentages.append(masking(selection, color_r, key))
+
+            # for cc, c, n in zip(crop_coords, color_range, name):
+            #     x, y = cc
+            #     t = sc[ x[0]:x[1], y[0]:y[1] ]
+            #     print(x,y)
+            #
+            #     # [55, 85] [380, 478]
+            #     # [610, 666] [97, 389]
+            #
+            #     # [[90, 220, 150], [100, 250, 255]] No, Thanks Bird
+            #     # [[16, 200, 220], [18, 255, 255]] Level Up
+            #
+            #     percentages.append(masking(t, c, n))
+
+
+            # print(percentages)
 
 
 
-            if percentages[0] >= 70:
-                # android.tap(1034, 155)
-                print("clicked Level Up")
 
-            # No thanks Bird
-            if percentages[1] >= 80:
-                # android.tap(782, 1413)
-                print("clicked No thanks Bird")
+            # if percentages[0] >= 70:
+            #     # android.tap(1034, 155)
+            #     print("Clicked Level Up")
+
+            # # No thanks Bird
+            # if percentages[1] >= 80:
+            #     # android.tap(782, 1413)
+            #     print("Clicked No thanks Bird")
+            #
+            #
+            # # Collect
+            # if percentages[2] >= 80:
+            #     # android.tap(782, 1195)
+            #     print("Clicked Collect")
 
 
-            # Collect
-            if np.all(frame[1195, 782] == [229, 191, 15]):
-                # android.tap(782, 1195)
-                print("clicked Collect")
+
+            if m_switch_variable.get() == "on":
+
+                if ra_switch_variable.get() == "on":
+                    if percentages[1] >= 80:
+                        android.tap(782, 1413)
+                        print("Clicked No thanks Bird")
+
+                    if percentages[2] >= 80:
+                        android.tap(782, 1195)
+                        print("Clicked Collect")
 
 
-            print(ac_switch_variable.get())
+                if lu_switch_variable.get() == "on" and percentages[0] >= 70:
+                    android.tap(1034, 155)
+                    print("Clicked Level Up")
 
-            # cv2.imshow('Phone Viewer', imS)
-            # cv2.waitKey(1)
-            for coord in coords:
-                if button1.config('text')[-1] =='OFF':
-                    pass
 
-                else:
-                    pass
+
+
+                if ac_switch_variable.get() == "on" and coords != []:
+                    for coord in coords:
+                        android.tap(coord[0], coord[1])
+
+
+            # print(ac_switch_variable.get())
+
+            cv2.imshow('Phone Viewer', imS)
+            cv2.waitKey(1)
+            # for coord in coords:
+            #     if button1.config('text')[-1] =='OFF':
+            #         pass
+            #
+            #     else:
+            #         pass
                     # Level Up Checker
 
 
@@ -221,13 +281,47 @@ def video_stream():
 
 video_stream()
 
+m_switch_frame = Frame(root)
+m_switch_frame.grid()
+
+m_switch_variable = StringVar(value="on")
+
+m_switch_label = Label(m_switch_frame, text="Master Toggle")
+m_off_button = Radiobutton(m_switch_frame, text="Off", variable=m_switch_variable,
+                            indicatoron=False, value="off", width=8)
+m_on_button = Radiobutton(m_switch_frame, text="On", variable=m_switch_variable,
+                            indicatoron=False, value="on", width=8)
+m_switch_label.pack(side="left")
+m_off_button.pack(side="left")
+m_on_button.pack(side="left")
+
+
+
+
+ra_switch_frame = Frame(root)
+ra_switch_frame.grid()
+
+ra_switch_variable = StringVar(value="on")
+
+ra_switch_label = Label(ra_switch_frame, text="Remove Adds")
+ra_off_button = Radiobutton(ra_switch_frame, text="Off", variable=ra_switch_variable,
+                            indicatoron=False, value="off", width=8)
+ra_on_button = Radiobutton(ra_switch_frame, text="On", variable=ra_switch_variable,
+                            indicatoron=False, value="on", width=8)
+ra_switch_label.pack(side="left")
+ra_off_button.pack(side="left")
+ra_on_button.pack(side="left")
+
+
+
+
 
 ac_switch_frame = Frame(root)
 ac_switch_frame.grid()
 
 ac_switch_variable = StringVar(value="off")
 
-ac_switch_label = Label(ac_switch_frame, text="Autoclicker Toggle ")
+ac_switch_label = Label(ac_switch_frame, text="Autoclicker Toggle")
 ac_off_button = Radiobutton(ac_switch_frame, text="Off", variable=ac_switch_variable,
                             indicatoron=False, value="off", width=8)
 ac_low_button = Radiobutton(ac_switch_frame, text="On", variable=ac_switch_variable,
@@ -243,7 +337,7 @@ lu_switch_frame.grid()
 
 lu_switch_variable = StringVar(value="off")
 
-lu_switch_label = Label(lu_switch_frame, text="Level Up Toggle ")
+lu_switch_label = Label(lu_switch_frame, text="Level Up Toggle")
 lu_off_button = Radiobutton(lu_switch_frame, text="Off", variable=lu_switch_variable,
                             indicatoron=False, value="off", width=8)
 lu_on_button = Radiobutton(lu_switch_frame, text="On", variable=lu_switch_variable,
