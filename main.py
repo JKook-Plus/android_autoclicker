@@ -116,18 +116,10 @@ def masking(view, ra, name):
 
     view_height, view_width, _ = view.shape
 
-    # print(view_height, view_width)
-    # 1026 486
-
-    # print(cv2.countNonZero(mask), mask.size, cv2.countNonZero(mask)/mask.size*100)
-
-
     # cv2.imshow(name, mask)
 
     # cv2.waitKey(1)
     return(round(cv2.countNonZero(mask)/mask.size*100,0))
-
-
 
 
 android = AndroidViewer()
@@ -140,7 +132,44 @@ lmain = Label(root, width=50, height=10)
 lmain.grid()
 root.title("Controls")
 
+def midpoint(_dict, index):
+    return (np.mean(_dict[index][0][1]), np.mean(_dict[index][0][0]))
+
+
+
 def video_stream():
+
+    blue_1 = [[90,220,150],[100,250,255]]
+    orange_1 = [[16,200,220], [18,255,255]]
+
+    resize_size = 30
+
+    tot_before = {
+    "Level Up":
+                [[[164, 252], [1132, 1413]],
+                orange_1],
+    "No, Thanks Bird":
+                [[[1803, 1973],[288, 1150]],
+                blue_1
+                ],
+    # 742, 1596 (45)
+    "Collect":
+                [[[1513, 1683],[288, 1150]],
+                blue_1
+                ]
+    }
+
+
+
+    tot = {}
+    for key in tot_before:
+        tot[key] = [[(np.multiply(tot_before[key][0][0], resize_size/100)).astype(int), (np.multiply(tot_before[key][0][1], resize_size/100)).astype(int)], tot_before[key][1]]
+
+
+    # print(tot)
+
+
+
     frames = android.get_next_frames()
     if frames is None:
         pass
@@ -151,46 +180,11 @@ def video_stream():
         for frame in frames:
 
 
-            imS = resizer(frame, 45)
-
+            imS = resizer(frame, resize_size)
+            # print(imS.shape[0], imS.shape[1])
             sc = cv2.cvtColor(imS, cv2.COLOR_BGR2RGB)
-
-
-            tot = {
-            "Level Up":
-                        [[[55, 85], [380, 478]],
-                        [[16,200,220], [18,255,255]]
-                        ],
-            "No, Thanks Bird":
-                        [[[610, 666],[97, 389]],
-                        [[90,220,150],[100,250,255]]
-                        ],
-            "Collect":
-                        [[[509, 570],[97, 389]],
-                        [[90,220,150],[100,250,255]]
-                        ]
-            }
-
-            crop_coords = [
-            [[55,85],[380,478]],
-            [[610, 666],[97, 389]]
-            ]
-
-
-            color_range = [
-            [[16,200,220],[18,255,255]],
-            [[90,220,150],[100,250,255]]
-            ]
-
-            name = [
-            "Level Up",
-            "No, Thanks Bird"
-            ]
-
             percentages = []
 
-            # 30 98
-            # 56 292
 
             for key in tot:
                 x, y = tot[key][0]
@@ -200,56 +194,25 @@ def video_stream():
 
                 percentages.append(masking(selection, color_r, key))
 
-            # for cc, c, n in zip(crop_coords, color_range, name):
-            #     x, y = cc
-            #     t = sc[ x[0]:x[1], y[0]:y[1] ]
-            #     print(x,y)
-            #
-            #     # [55, 85] [380, 478]
-            #     # [610, 666] [97, 389]
-            #
-            #     # [[90, 220, 150], [100, 250, 255]] No, Thanks Bird
-            #     # [[16, 200, 220], [18, 255, 255]] Level Up
-            #
-            #     percentages.append(masking(t, c, n))
-
-
-            # print(percentages)
-
-
-
-
-            # if percentages[0] >= 70:
-            #     # android.tap(1034, 155)
-            #     print("Clicked Level Up")
-
-            # # No thanks Bird
-            # if percentages[1] >= 80:
-            #     # android.tap(782, 1413)
-            #     print("Clicked No thanks Bird")
-            #
-            #
-            # # Collect
-            # if percentages[2] >= 80:
-            #     # android.tap(782, 1195)
-            #     print("Clicked Collect")
-
-
 
             if m_switch_variable.get() == "on":
 
                 if ra_switch_variable.get() == "on":
                     if percentages[1] >= 80:
-                        android.tap(782, 1413)
+                        # 700 1875
+                        ntb_l = midpoint(tot_before, "No, Thanks Bird")
+                        android.tap(ntb_l[0], ntb_l[1])
                         print("Clicked No thanks Bird")
 
                     if percentages[2] >= 80:
-                        android.tap(782, 1195)
+                        c_l = midpoint(tot_before, "Collect")
+                        android.tap(c_l[0], c_l[1])
                         print("Clicked Collect")
 
 
                 if lu_switch_variable.get() == "on" and percentages[0] >= 70:
-                    android.tap(1034, 155)
+                    lu_l = midpoint(tot_before, "Level Up")
+                    android.tap(lu_l[0], lu_l[1])
                     print("Clicked Level Up")
 
 
@@ -264,16 +227,7 @@ def video_stream():
 
             cv2.imshow('Phone Viewer', imS)
             cv2.waitKey(1)
-            # for coord in coords:
-            #     if button1.config('text')[-1] =='OFF':
-            #         pass
-            #
-            #     else:
-            #         pass
-                    # Level Up Checker
 
-
-                    # android.tap(coord[0], coord[1])
 
     lmain.after(1, video_stream)
 
@@ -316,6 +270,7 @@ ra_on_button.pack(side="left")
 
 
 
+
 ac_switch_frame = Frame(root)
 ac_switch_frame.grid()
 
@@ -329,6 +284,9 @@ ac_low_button = Radiobutton(ac_switch_frame, text="On", variable=ac_switch_varia
 ac_switch_label.pack(side="left")
 ac_off_button.pack(side="left")
 ac_low_button.pack(side="left")
+
+
+
 
 
 
