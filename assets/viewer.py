@@ -24,7 +24,7 @@ class AndroidViewer(ControlMixin):
 
     video_data_queue = Queue()
 
-    def __init__(self, max_width=0, bitrate=8000000, max_fps=30, adb_path=r'adb\adb.exe',
+    def __init__(self, max_width=0, bitrate=8000000, max_fps=30, adb_path=r'assets\adb\adb.exe',
                  ip='127.0.0.1', port=8081):
         """
 
@@ -92,7 +92,7 @@ class AndroidViewer(ControlMixin):
             logger.info("Upload JAR...")
 
             server_root = os.path.abspath(os.path.dirname(__file__))
-            server_file_path = server_root + '/server/scrcpy-server.jar'
+            server_file_path = server_root + r'\server\scrcpy-server.jar'
             adb_push = subprocess.Popen([self.adb_path, 'push', server_file_path, '/data/local/tmp/'],
                                         stdout=subprocess.PIPE, stderr=subprocess.PIPE, cwd=server_root)
             adb_push_comm = ''.join([x.decode("utf-8") for x in adb_push.communicate() if x is not None])

@@ -124,12 +124,12 @@ class ControlMixin:
     def send_keycode(self, keycode):
 
         if not (keycode > 284):
-
+            # print(keycode)
             b = bytearray(b'\x00')
             b += (b"\x00")
             b += struct.pack("!I", keycode)
             b += (b"\x00\x00\x00\x00")
-
+            # print(b)
             self.control_socket.send(b)
 
         else:
