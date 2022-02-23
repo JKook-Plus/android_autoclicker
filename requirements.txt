@@ -1,0 +1,5 @@
+av
+opencv-python
+numpy
+Pillow
+pure-python-adb
