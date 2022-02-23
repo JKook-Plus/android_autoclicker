@@ -15,13 +15,16 @@ from tkinter import *
 
 import os
 
+import dearpygui.dearpygui as dpg
+
+
 coords = []
 
 timer = 0
 
 
 
-print(os.system('adb\\adb.exe devices'))
+print(os.system(r'assets\adb\adb.exe devices'))
 
 def connect_device():
     adb = Client(host='127.0.0.1',port=5037)
@@ -212,32 +215,12 @@ def video_stream():
             #     percentages.append(masking(selection, color_r, key))
 
 
-            if m_switch_variable.get() == "on":
-
-                # if ra_switch_variable.get() == "on":
-                    # if percentages[1] >= 80:
-                    #     # 700 1875
-                    #     ntb_l = midpoint(tot_before, "No, Thanks Bird")
-                    #     android.tap(ntb_l[0], ntb_l[1])
-                    #     print("Clicked No thanks Bird")
-                    #
-                    # if percentages[2] >= 80:
-                    #     c_l = midpoint(tot_before, "Collect")
-                    #     android.tap(c_l[0], c_l[1])
-                    #     print("Clicked Collect")
-
-
-                # if lu_switch_variable.get() == "on" and percentages[0] >= 70:
-                #     lu_l = midpoint(tot_before, "Level Up")
-                #     android.tap(lu_l[0], lu_l[1])
-                #     print("Clicked Level Up")
-
-
+            if dpg.get_value(master_toggle) == True:
 
                 global timer
-                if ac_switch_variable.get() == "on" and coords != []:
+                if dpg.get_value(autoclicker_toggle) == True and coords != []:
                     # print(timer)
-                    if timer_switch_variable.get() == "on":
+                    if dpg.get_value(timer_toggle)  == True:
                         timer = timer +1
                         if timer > 0 and timer < 80:
                             for coord in coords:
@@ -259,116 +242,79 @@ def video_stream():
             cv2.waitKey(1)
 
 
-    lmain.after(1, video_stream)
-
-
-
-video_stream()
-
-m_switch_frame = Frame(root)
-m_switch_frame.grid()
-
-m_switch_variable = StringVar(value="on")
-
-m_switch_label = Label(m_switch_frame, text="Master Toggle")
-m_off_button = Radiobutton(m_switch_frame, text="Off", variable=m_switch_variable,
-                            indicatoron=False, value="off", width=8)
-m_on_button = Radiobutton(m_switch_frame, text="On", variable=m_switch_variable,
-                            indicatoron=False, value="on", width=8)
-
-m_switch_label.pack(side="left")
-m_off_button.pack(side="left")
-m_on_button.pack(side="left")
+    # lmain.after(1, video_stream)
 
 
 
 
-ra_switch_frame = Frame(root)
-ra_switch_frame.grid()
-
-ra_switch_variable = StringVar(value="on")
-
-ra_switch_label = Label(ra_switch_frame, text="Remove Adds")
-ra_off_button = Radiobutton(ra_switch_frame, text="Off", variable=ra_switch_variable,
-                            indicatoron=False, value="off", width=8)
-ra_on_button = Radiobutton(ra_switch_frame, text="On", variable=ra_switch_variable,
-                            indicatoron=False, value="on", width=8)
-ra_switch_label.pack(side="left")
-ra_off_button.pack(side="left")
-ra_on_button.pack(side="left")
+#
+# video_stream()
+#
+#
+#
+# v_frame = Frame(root)
+# v_frame.grid()
+#
+# volume_up_button = Button(master=v_frame, text='Volume Up', command= lambda: android.send_keycode(keycodes.AKEYCODE_VOLUME_UP))
+# volume_up_button.pack(side="top")
+# volume_down_button = Button(master=v_frame, text='Volume Down', command= lambda: android.send_keycode(keycodes.AKEYCODE_VOLUME_DOWN))
+# volume_down_button.pack(side="bottom")
 
 
 
 
 
 
-ac_switch_frame = Frame(root)
-ac_switch_frame.grid()
+# root.mainloop() # Start the GUI
 
-ac_switch_variable = StringVar(value="off")
+color_1_hex = "#202020"
+color_2_hex = "#444444"
+color_3_hex = "#546F8F"
+color_4_hex = "#A58EA4"
+color_5_hex = "#F7F2F2"
 
-ac_switch_label = Label(ac_switch_frame, text="Autoclicker Toggle")
-ac_off_button = Radiobutton(ac_switch_frame, text="Off", variable=ac_switch_variable,
-                            indicatoron=False, value="off", width=8)
-ac_low_button = Radiobutton(ac_switch_frame, text="On", variable=ac_switch_variable,
-                            indicatoron=False, value="on", width=8)
-ac_switch_label.pack(side="left")
-ac_off_button.pack(side="left")
-ac_low_button.pack(side="left")
-
-
+color_1 = tuple(int(color_1_hex.replace("#", "")[i:i+2], 16) for i in (0, 2, 4))
+color_2 = tuple(int(color_2_hex.replace("#", "")[i:i+2], 16) for i in (0, 2, 4))
+color_3 = tuple(int(color_3_hex.replace("#", "")[i:i+2], 16) for i in (0, 2, 4))
+color_4 = tuple(int(color_4_hex.replace("#", "")[i:i+2], 16) for i in (0, 2, 4))
+color_5 = tuple(int(color_5_hex.replace("#", "")[i:i+2], 16) for i in (0, 2, 4))
 
 
 
 
-lu_switch_frame = Frame(root)
-lu_switch_frame.grid()
+def save_callback():
+    print("Save Clicked")
 
-lu_switch_variable = StringVar(value="off")
-
-lu_switch_label = Label(lu_switch_frame, text="Level Up Toggle")
-lu_off_button = Radiobutton(lu_switch_frame, text="Off", variable=lu_switch_variable,
-                            indicatoron=False, value="off", width=8)
-lu_on_button = Radiobutton(lu_switch_frame, text="On", variable=lu_switch_variable,
-                            indicatoron=False, value="on", width=8)
-lu_switch_label.pack(side="left")
-lu_off_button.pack(side="left")
-lu_on_button.pack(side="left")
-
-
-timer_switch_frame = Frame(root)
-timer_switch_frame.grid()
-
-timer_switch_variable = StringVar(value="off")
-
-timer_switch_label = Label(timer_switch_frame, text="Timer Toggle")
-timer_off_button = Radiobutton(timer_switch_frame, text="Off", variable=timer_switch_variable,
-                            indicatoron=False, value="off", width=8)
-timer_on_button = Radiobutton(timer_switch_frame, text="On", variable=timer_switch_variable,
-                            indicatoron=False, value="on", width=8)
-timer_switch_label.pack(side="left")
-timer_off_button.pack(side="left")
-timer_on_button.pack(side="left")
-
-w_frame = Frame(root)
-w_frame.grid()
-
-w = Button(w_frame, text ="Toggle display", command = toggle_display)
-w.pack(side="left")
+# dpg.set_main_window_size(500,500)
+with dpg.window(label="Main Controls", width=426, height=900) as window_id:
+    with dpg.theme() as theme:
+        dpg.add_theme_style(dpg.mvStyleVar_FrameRounding, 25)
+        dpg.add_theme_color(dpg.mvThemeCol_Button, color_2)
+        dpg.add_theme_color(dpg.mvThemeCol_ButtonActive, color_4)
+        dpg.add_theme_color(dpg.mvThemeCol_ButtonHovered, color_2)
+        dpg.add_theme_color(dpg.mvThemeCol_Border, color_2)
+        dpg.add_theme_color(dpg.mvThemeCol_FrameBg, color_2)
+        dpg.add_theme_color(dpg.mvThemeCol_WindowBg, color_1)
 
 
+        # dpg.add_theme_style(dpg.mvStyleVar_FramePadding, i*3, i*3)
 
-v_frame = Frame(root)
-v_frame.grid()
+    master_toggle = dpg.add_checkbox(label="Master")
+    autoclicker_toggle = dpg.add_checkbox(label="Autoclicker")
+    timer_toggle = dpg.add_checkbox(label="Timer")
+    volume_up_button = dpg.add_button(label="Volume Up", callback=lambda: android.send_keycode(keycodes.AKEYCODE_VOLUME_UP))
+    volume_down_button = dpg.add_button(label="Volume Down", callback=lambda: android.send_keycode(keycodes.AKEYCODE_VOLUME_DOWN))
+    dpg.set_item_theme(window_id, theme)
 
-volume_up_button = Button(master=v_frame, text='Volume Up', command= lambda: android.send_keycode(keycodes.AKEYCODE_VOLUME_UP))
-volume_up_button.pack(side="top")
-volume_down_button = Button(master=v_frame, text='Volume Down', command= lambda: android.send_keycode(keycodes.AKEYCODE_VOLUME_DOWN))
-volume_down_button.pack(side="bottom")
+    with dpg.menu(label="Tools"):
+        dpg.add_menu_item(label="Show Metrics", callback=lambda:dpg.show_tool(dpg.mvTool_Metrics))
+dpg.setup_viewport()
 
+cc = 0
 
+while dpg.is_dearpygui_running():
+    # print(cc)
+    cc = cc+1
+    video_stream()
 
-
-
-
-root.mainloop() # Start the GUI
+    dpg.render_dearpygui_frame()
